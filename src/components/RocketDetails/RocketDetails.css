@@ -1,0 +1,16 @@
+.launch-details .buttons-container {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+}
+
+.launch-details .launch-info {
+    margin: 15px 0;
+    padding: 20px;
+    background: #fafafa;
+}
+
+.launch-details .fav {
+    background: green;
+    color: #fafafa;
+}

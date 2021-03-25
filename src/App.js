@@ -1,23 +1,56 @@
-import logo from './logo.svg';
+import { useState, useEffect } from 'react';
+import RocketList from './components/RocketList';
+import { getLaunches, getRockets } from './services/RocketServices';
 import './App.css';
 
 function App() {
+  const [launchList, setLaunchList] = useState([]);
+  const [searchValue, setSearchValue] = useState('');
+  const [filteredLaunchList, setFilteredLaunchList] = useState([]);
+
+  useEffect(() => {
+    async function getServiceData () {
+      const launchesCallback = await getLaunches();
+      const rocketsCallback = await getRockets();
+      const launchesList = launchesCallback.data;
+      const rocketsList = rocketsCallback.data;
+  
+      const parsedLaunches = launchesList.map((launch) => {
+        let launchedRocket = rocketsList.filter((rocket) => {
+          return rocket.rocket_id === launch.rocket.rocket_id;
+        });
+
+        return {
+          ...launch,
+          rocket: {
+            ...launch.rocket,
+            ...launchedRocket
+          }
+        };
+      })
+
+      setLaunchList(parsedLaunches);
+      setFilteredLaunchList(parsedLaunches);
+    }
+    getServiceData();
+  },[])
+
+  useEffect(() => {
+    if(searchValue.length === 0) {
+      setFilteredLaunchList(launchList);
+    } else {
+      setFilteredLaunchList(launchList.filter((launch) => {
+        let missionName = launch.mission_name.toLocaleLowerCase();
+        return missionName.indexOf(searchValue.toLocaleLowerCase()) !== -1;
+      }))
+    }
+    
+  }, [searchValue])
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <input type="text" onChange={(e) => setSearchValue(e.target.value)} />
+      <RocketList list={filteredLaunchList} />
     </div>
   );
 }
